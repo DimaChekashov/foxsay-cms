@@ -5,6 +5,7 @@ const Editor = () => {
     const [pageList, setPageList] = useState([]);
     const [newPageName, setNewPageName] = useState("");
     const [currentPage, setCurrentPage] = useState("site/index.html");
+    const [virtualDom, setVirtualDom] = useState();
     const iframeRef = useRef(null);
 
     useEffect(() => {
@@ -17,10 +18,74 @@ const Editor = () => {
     }
 
     const open = (page) => {
-        setCurrentPage(`./${page}`);
-        iframeRef.current.onload = () => {
-            console.log(currentPage);
-        };
+        setCurrentPage(`./${page}?rnd=${Math.random()}`);
+
+        axios.get(`./${page}`)
+            .then(res => parseStrToDOM(res.data))
+            .then(wrapTextNodes)
+            .then(dom => {
+                setVirtualDom(dom);
+                return dom;
+            })
+            .then(serializeDOMToString)
+            .then(html => axios.post("./api/saveTempPage.php", {html}))
+            .then(() => iframeRef.current.src = "./site/temp.html")
+            .then(() => {
+                iframeRef.current.onload = () => {
+                    enableEditing()
+                }
+            });
+    }
+
+    const enableEditing = () => {
+        iframeRef.current.contentDocument.body.querySelectorAll("text-editor").forEach(element => {
+            element.contentEditable = "true";
+            element.addEventListener("input", () => {
+                onTextEdit(element);
+            })
+        });
+    }
+
+    const onTextEdit = (element) => {
+        const id = element.getAttribute("nodeid");
+
+        this.virtualDom.body.querySelector(`[nodeid="${id}"]`).innerHTML = element.innerHTML;
+    }
+
+    const parseStrToDOM = (str) => {
+        const parser = new DOMParser();
+        return parser.parseFromString(str, "text/html");
+    }
+
+    const wrapTextNodes = (dom) => {
+        const body = dom.body;
+        let textNodes = [];
+
+        function recursionNode(element) {
+            element.childNodes.forEach(node => {
+                if(node.nodeName === "#text" && node.nodeValue.replace(/\s+/g, "").length > 0) {
+                    textNodes.push(node);
+                } else {
+                    recursionNode(node);
+                }
+            });
+        }
+
+        recursionNode(body);
+
+        textNodes.forEach((node, i) => {
+            const wrapper = dom.createElement('text-editor');
+            node.parentNode.replaceChild(wrapper, node);
+            wrapper.appendChild(node);
+            wrapper.setAttribute("nodeid", i);
+        })
+
+        return dom;
+    }
+
+    const serializeDOMToString = (dom) => {
+        const serializer = new XMLSerializer();
+        return serializer.serializeToString(dom);
     }
 
     const loadPageList = () => {
