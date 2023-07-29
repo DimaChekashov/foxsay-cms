@@ -1,0 +1,46 @@
+{
+  "name": "foxsay-cms",
+  "version": "1.0.0",
+  "description": "cms",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DimaChekashov/foxsay-cms.git"
+  },
+  "keywords": [
+    "cms",
+    "javascript",
+    "php",
+    "react"
+  ],
+  "author": "DimaChekashov",
+  "license": "ISC",
+  "browserslist": [
+    "last 2 chrome versions",
+    "last 2 firefox versions",
+    "last 2 ios versions"
+  ],
+  "bugs": {
+    "url": "https://github.com/DimaChekashov/foxsay-cms/issues"
+  },
+  "homepage": "https://github.com/DimaChekashov/foxsay-cms#readme",
+  "dependencies": {
+    "core-js": "^3.32.0",
+    "jquery": "^3.7.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.22.9",
+    "@babel/preset-env": "^7.22.9",
+    "@babel/preset-react": "^7.22.5",
+    "babel-loader": "^9.1.3",
+    "gulp": "^4.0.2",
+    "gulp-sass": "^5.1.0",
+    "sass": "^1.64.1",
+    "webpack": "^5.88.2",
+    "webpack-cli": "^5.1.4",
+    "webpack-stream": "^7.0.0"
+  }
+}
