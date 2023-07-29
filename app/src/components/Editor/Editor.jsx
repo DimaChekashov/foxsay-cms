@@ -26,12 +26,30 @@ const Editor = () => {
         loadPageList();
     }
 
+    const deletePage = (page) => {
+        axios.post("./api/deletePage.php", {"name": page})
+            .then((res) => console.log(res))
+            .catch(() => {
+                alert("Page is not found!");
+            });
+
+        loadPageList();
+    }
+
     return(
         <>
             <input type="text" value={newPageName} onChange={(e) => setNewPageName(e.target.value)} />
             <button onClick={createNewPage}>Create Page</button>
 
-            {pageList.map((page, i) => <h1 key={i}>{page}</h1>)}
+            {pageList.map((page, i) => (
+                <h1 key={i}>
+                    {page}
+                    <a 
+                        href="#"
+                        onClick={() => deletePage(page)}
+                    >(x)</a>
+                </h1>)
+            )}
         </>
     )
 }
