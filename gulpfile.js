@@ -12,7 +12,7 @@ gulp.task("copy-html", () => {
 });
 
 gulp.task("build-js", () => {
-    return gulp.src("./app/src/main.js")
+    return gulp.src("./app/src/main.jsx")
         .pipe(webpack({
             mode: "development",
             output: {
@@ -23,7 +23,7 @@ gulp.task("build-js", () => {
             module: {
                 rules: [
                     {
-                        test: /\.(?:js|mjs|cjs)$/,
+                        test: /\.(?:js|mjs|cjs|jsx)$/,
                         exclude: /node_modules/,
                         use: {
                             loader: 'babel-loader',
@@ -63,7 +63,7 @@ gulp.task("copy-assets", () => {
 
 gulp.task("watch", () => {
     gulp.watch("./app/src/index.html", gulp.parallel("copy-html"));
-    gulp.watch("./app/src/**/*.js", gulp.parallel("build-js"));
+    gulp.watch("./app/src/**/*.jsx", gulp.parallel("build-js"));
     gulp.watch("./app/scss/**/*.scss", gulp.parallel("build-sass"));
     gulp.watch("./app/api/**/*.*", gulp.parallel("copy-api"));
     gulp.watch("./app/assets/**/*.*", gulp.parallel("copy-assets"));
