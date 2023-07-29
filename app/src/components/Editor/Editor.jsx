@@ -1,13 +1,27 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
 
 const Editor = () => {
     const [pageList, setPageList] = useState([]);
     const [newPageName, setNewPageName] = useState("");
+    const [currentPage, setCurrentPage] = useState("site/index.html");
+    const iframeRef = useRef(null);
 
     useEffect(() => {
-        loadPageList();
+        init(currentPage);
     }, []);
+
+    const init = (page) => {
+        open(page);
+        loadPageList();
+    }
+
+    const open = (page) => {
+        setCurrentPage(`./${page}`);
+        iframeRef.current.onload = () => {
+            console.log(currentPage);
+        };
+    }
 
     const loadPageList = () => {
         axios.get("./api")
@@ -38,7 +52,8 @@ const Editor = () => {
 
     return(
         <>
-            <input type="text" value={newPageName} onChange={(e) => setNewPageName(e.target.value)} />
+            <iframe src={currentPage} frameBorder="0" ref={iframeRef}></iframe>
+            {/* <input type="text" value={newPageName} onChange={(e) => setNewPageName(e.target.value)} />
             <button onClick={createNewPage}>Create Page</button>
 
             {pageList.map((page, i) => (
@@ -49,7 +64,7 @@ const Editor = () => {
                         onClick={() => deletePage(page)}
                     >(x)</a>
                 </h1>)
-            )}
+            )} */}
         </>
     )
 }
