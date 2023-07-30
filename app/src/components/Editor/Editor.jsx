@@ -1,11 +1,13 @@
 import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
 
+let virtualDom;
+
 const Editor = () => {
     const [pageList, setPageList] = useState([]);
     const [newPageName, setNewPageName] = useState("");
     const [currentPage, setCurrentPage] = useState("site/index.html");
-    const [virtualDom, setVirtualDom] = useState();
+    
     const iframeRef = useRef(null);
 
     useEffect(() => {
@@ -24,7 +26,7 @@ const Editor = () => {
             .then(res => parseStrToDOM(res.data))
             .then(wrapTextNodes)
             .then(dom => {
-                setVirtualDom(dom);
+                virtualDom = dom;
                 return dom;
             })
             .then(serializeDOMToString)
@@ -32,7 +34,7 @@ const Editor = () => {
             .then(() => iframeRef.current.src = "./site/temp.html")
             .then(() => {
                 iframeRef.current.onload = () => {
-                    enableEditing()
+                    enableEditing();
                 }
             });
     }
@@ -48,8 +50,7 @@ const Editor = () => {
 
     const onTextEdit = (element) => {
         const id = element.getAttribute("nodeid");
-
-        this.virtualDom.body.querySelector(`[nodeid="${id}"]`).innerHTML = element.innerHTML;
+        virtualDom.body.querySelector(`[nodeid="${id}"]`).innerHTML = element.innerHTML;
     }
 
     const parseStrToDOM = (str) => {
