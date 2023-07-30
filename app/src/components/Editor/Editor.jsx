@@ -8,16 +8,20 @@ let virtualDom;
 const Editor = () => {
     const [pageList, setPageList] = useState([]);
     const [newPageName, setNewPageName] = useState("");
-    const [currentPage, setCurrentPage] = useState("site/index.html");
+    const [currentPage, setCurrentPage] = useState("index.html");
     const [loading, setLoading] = useState(true);
     
     const iframeRef = useRef(null);
 
     useEffect(() => {
-        init(currentPage);
+        init(null, currentPage);
     }, []);
 
-    const init = (page) => {
+    const init = (e, page) => {
+        if(e) {
+            e.preventDefault();
+        }
+        isLoading();
         open(page, isLoaded);
         loadPageList();
     }
@@ -25,7 +29,7 @@ const Editor = () => {
     const open = (page, callback) => {
         setCurrentPage(page);
 
-        axios.get(`./${page}?rnd=${Math.random()}`)
+        axios.get(`./site/${page}?rnd=${Math.random()}`)
             .then(res => DOMHelper.parseStrToDOM(res.data))
             .then(DOMHelper.wrapTextNodes)
             .then(dom => {
@@ -34,11 +38,11 @@ const Editor = () => {
             })
             .then(DOMHelper.serializeDOMToString)
             .then(html => axios.post("./api/saveTempPage.php", {html}))
-            .then(() => iframeRef.current.src = "./site/temp.html")
+            .then(() => iframeRef.current.src = "./site/dont-use-that-page-01010.html")
             .then(() => {
                 iframeRef.current.onload = () => {
+                    axios.post("./api/deleteTempPage.php");
                     enableEditing();
-
                     injectStyles();
                 }
             })
@@ -114,7 +118,7 @@ const Editor = () => {
     }
 
     const loadPageList = () => {
-        axios.get("./api")
+        axios.get("./api/pageList.php")
             .then(res => {
                 setPageList(res.data);
             });
@@ -153,6 +157,14 @@ const Editor = () => {
             <Spinner active={loading} />
             <iframe src={currentPage} frameBorder="0" ref={iframeRef}></iframe>
             <div className="panel">
+                <ul className="panel-list">
+                    {pageList.map(item => (
+                        <li key={item}>
+                            <a href="#" onClick={(e) => init(e, item)}>{item}</a>
+                        </li>
+                    ))}
+                </ul>
+                <button>Open</button>
                 <button onClick={save}>Deploy</button>
             </div>
         </>

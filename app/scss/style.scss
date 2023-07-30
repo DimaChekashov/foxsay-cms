@@ -26,6 +26,16 @@ iframe {
     display: flex;
     justify-content: flex-end;
     border-bottom: 1px solid #0000;
+    gap: 20px;
+    &-list {
+        padding: 3px;
+        margin: 0;
+        border: 1px solid #000000;
+        list-style: none;
+        background-color: #fff;
+        width: 250px;
+        overflow-y: scroll;
+    }
 }
 
 .spinner {
