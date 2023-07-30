@@ -2,11 +2,13 @@ import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import DOMHelper from "../../helpers/dom-helper";
 import Spinner from "../Spinner/Spinner.jsx";
+import Panel from "../Panel/Panel.jsx";
 
 let virtualDom;
 
 const Editor = () => {
     const [pageList, setPageList] = useState([]);
+    const [backupsList, setBackupsList] = useState([]);
     const [newPageName, setNewPageName] = useState("");
     const [currentPage, setCurrentPage] = useState("index.html");
     const [loading, setLoading] = useState(true);
@@ -24,6 +26,7 @@ const Editor = () => {
         isLoading();
         open(page, isLoaded);
         loadPageList();
+        loadBackupsList();
     }
 
     const open = (page, callback) => {
@@ -47,9 +50,11 @@ const Editor = () => {
                 }
             })
             .then(callback);
+
+            loadBackupsList();
     }
 
-    const save = () => {
+    const save = async () => {
         if(!confirm("Are you sure to deploy changes?")) return;
 
         isLoading();
@@ -60,13 +65,15 @@ const Editor = () => {
 
         const html = DOMHelper.serializeDOMToString(newDom);
         
-        axios.post("./api/savePage.php", {
+        await axios.post("./api/savePage.php", {
             pageName: currentPage, 
             html: html
         })
         .then(() => alert("Deploy success!"))
         .catch(() => alert("Something went wrong!"))
         .finally(isLoaded);
+
+        loadBackupsList();
     }
 
     const enableEditing = () => {
@@ -124,24 +131,21 @@ const Editor = () => {
             });
     }
 
-    const createNewPage = () => {
-        axios.post("./api/createNewPage.php", {"name": newPageName})
-            .then((res) => console.log(res))
-            .catch(() => {
-                alert("Page already exist!");
-            });
-        setNewPageName("");
-        loadPageList();
+    const loadBackupsList = () => {
+        axios.get("./backups/backups.json")
+            .then(res => setBackupsList(res.data.filter(backup => {
+                return backup.page === currentPage;
+            })));
     }
 
-    const deletePage = (page) => {
-        axios.post("./api/deletePage.php", {"name": page})
-            .then((res) => console.log(res))
-            .catch(() => {
-                alert("Page is not found!");
-            });
+    const restoreBackup = async (e, backup) => {
+        if(e) e.preventDefault();
 
-        loadPageList();
+        if(confirm("Are you sure want restore this file?")) {
+            isLoading();
+            await axios.post("./api/restoreBackup.php", {"page": currentPage, "file": backup});
+            open(currentPage, isLoaded);
+        }
     }
 
     const isLoading = () => {
@@ -155,18 +159,8 @@ const Editor = () => {
     return(
         <>
             <Spinner active={loading} />
-            <iframe src={currentPage} frameBorder="0" ref={iframeRef}></iframe>
-            <div className="panel">
-                <ul className="panel-list">
-                    {pageList.map(item => (
-                        <li key={item}>
-                            <a href="#" onClick={(e) => init(e, item)}>{item}</a>
-                        </li>
-                    ))}
-                </ul>
-                <button>Open</button>
-                <button onClick={save}>Deploy</button>
-            </div>
+            <iframe src="" frameBorder="0" ref={iframeRef}></iframe>
+            <Panel save={save} pageList={pageList} backupsList={backupsList} restoreBackup={restoreBackup} init={init} />
         </>
     )
 }

@@ -35,6 +35,14 @@ iframe {
         background-color: #fff;
         width: 250px;
         overflow-y: scroll;
+        a {
+            color: blue;
+        }
+        &.restore {
+            a {
+                color: green;
+            }
+        }
     }
 }
 
