@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import DOMHelper from "../../helpers/dom-helper";
+import Spinner from "../Spinner/Spinner.jsx";
 
 let virtualDom;
 
@@ -8,6 +9,7 @@ const Editor = () => {
     const [pageList, setPageList] = useState([]);
     const [newPageName, setNewPageName] = useState("");
     const [currentPage, setCurrentPage] = useState("site/index.html");
+    const [loading, setLoading] = useState(true);
     
     const iframeRef = useRef(null);
 
@@ -16,11 +18,11 @@ const Editor = () => {
     }, []);
 
     const init = (page) => {
-        open(page);
+        open(page, isLoaded);
         loadPageList();
     }
 
-    const open = (page) => {
+    const open = (page, callback) => {
         setCurrentPage(page);
 
         axios.get(`./${page}?rnd=${Math.random()}`)
@@ -39,10 +41,15 @@ const Editor = () => {
 
                     injectStyles();
                 }
-            });
+            })
+            .then(callback);
     }
 
     const save = () => {
+        if(!confirm("Are you sure to deploy changes?")) return;
+
+        isLoading();
+
         const newDom = virtualDom.cloneNode(virtualDom);
 
         DOMHelper.unwrapTextNodes(newDom);
@@ -53,6 +60,9 @@ const Editor = () => {
             pageName: currentPage, 
             html: html
         })
+        .then(() => alert("Deploy success!"))
+        .catch(() => alert("Something went wrong!"))
+        .finally(isLoaded);
     }
 
     const enableEditing = () => {
@@ -130,22 +140,21 @@ const Editor = () => {
         loadPageList();
     }
 
+    const isLoading = () => {
+        setLoading(true);
+    }
+
+    const isLoaded = () => {
+        setLoading(false);
+    }
+
     return(
         <>
-            <button onClick={save}>Click</button>
+            <Spinner active={loading} />
             <iframe src={currentPage} frameBorder="0" ref={iframeRef}></iframe>
-            {/* <input type="text" value={newPageName} onChange={(e) => setNewPageName(e.target.value)} />
-            <button onClick={createNewPage}>Create Page</button>
-
-            {pageList.map((page, i) => (
-                <h1 key={i}>
-                    {page}
-                    <a 
-                        href="#"
-                        onClick={() => deletePage(page)}
-                    >(x)</a>
-                </h1>)
-            )} */}
+            <div className="panel">
+                <button onClick={save}>Deploy</button>
+            </div>
         </>
     )
 }
