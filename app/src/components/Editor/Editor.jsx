@@ -20,9 +20,9 @@ const Editor = () => {
     }
 
     const open = (page) => {
-        setCurrentPage(`./${page}?rnd=${Math.random()}`);
+        setCurrentPage(page);
 
-        axios.get(`./${page}`)
+        axios.get(`./${page}?rnd=${Math.random()}`)
             .then(res => parseStrToDOM(res.data))
             .then(wrapTextNodes)
             .then(dom => {
@@ -37,6 +37,19 @@ const Editor = () => {
                     enableEditing();
                 }
             });
+    }
+
+    const save = () => {
+        const newDom = virtualDom.cloneNode(virtualDom);
+
+        unwrapTextNodes(newDom);
+
+        const html = serializeDOMToString(newDom);
+        
+        axios.post("./api/savePage.php", {
+            pageName: currentPage, 
+            html: html
+        })
     }
 
     const enableEditing = () => {
@@ -89,6 +102,12 @@ const Editor = () => {
         return serializer.serializeToString(dom);
     }
 
+    const unwrapTextNodes = (dom) => {
+        dom.body.querySelectorAll("text-editor").forEach(element => {
+            element.parentNode.replaceChild(element.firstChild, element);
+        });
+    }
+
     const loadPageList = () => {
         axios.get("./api")
             .then(res => {
@@ -118,6 +137,7 @@ const Editor = () => {
 
     return(
         <>
+            <button onClick={save}>Click</button>
             <iframe src={currentPage} frameBorder="0" ref={iframeRef}></iframe>
             {/* <input type="text" value={newPageName} onChange={(e) => setNewPageName(e.target.value)} />
             <button onClick={createNewPage}>Create Page</button>
