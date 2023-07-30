@@ -36,6 +36,8 @@ const Editor = () => {
             .then(() => {
                 iframeRef.current.onload = () => {
                     enableEditing();
+
+                    injectStyles();
                 }
             });
     }
@@ -55,11 +57,38 @@ const Editor = () => {
 
     const enableEditing = () => {
         iframeRef.current.contentDocument.body.querySelectorAll("text-editor").forEach(element => {
-            element.contentEditable = "true";
+            element.addEventListener("click", () => {
+                element.contentEditable = "true";
+                element.focus();
+            });
+            element.addEventListener("blur", () => {
+                element.removeAttribute("contenteditable");
+            });
+            element.addEventListener("keypress", (e) => {
+                if(e.keyCode === 13) {
+                    element.removeAttribute("contenteditable");
+                }
+            });
             element.addEventListener("input", () => {
                 onTextEdit(element);
-            })
+            });
         });
+    }
+
+    const injectStyles = () => {
+        const style = iframeRef.current.contentDocument.createElement("style");
+        style.innerHTML = `
+            text-editor:hover {
+                outline: 3px solid orange;
+                outline-offset: 8px;
+            }
+            text-editor:focus {
+                outline: 3px solid red;
+                outline-offset: 8px;
+            }
+        `;
+        
+        iframeRef.current.contentDocument.head.appendChild(style);
     }
 
     const onTextEdit = (element) => {
