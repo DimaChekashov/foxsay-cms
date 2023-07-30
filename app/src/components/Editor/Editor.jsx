@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
+import DOMHelper from "../../helpers/dom-helper";
 
 let virtualDom;
 
@@ -23,13 +24,13 @@ const Editor = () => {
         setCurrentPage(page);
 
         axios.get(`./${page}?rnd=${Math.random()}`)
-            .then(res => parseStrToDOM(res.data))
-            .then(wrapTextNodes)
+            .then(res => DOMHelper.parseStrToDOM(res.data))
+            .then(DOMHelper.wrapTextNodes)
             .then(dom => {
                 virtualDom = dom;
                 return dom;
             })
-            .then(serializeDOMToString)
+            .then(DOMHelper.serializeDOMToString)
             .then(html => axios.post("./api/saveTempPage.php", {html}))
             .then(() => iframeRef.current.src = "./site/temp.html")
             .then(() => {
@@ -42,9 +43,9 @@ const Editor = () => {
     const save = () => {
         const newDom = virtualDom.cloneNode(virtualDom);
 
-        unwrapTextNodes(newDom);
+        DOMHelper.unwrapTextNodes(newDom);
 
-        const html = serializeDOMToString(newDom);
+        const html = DOMHelper.serializeDOMToString(newDom);
         
         axios.post("./api/savePage.php", {
             pageName: currentPage, 
@@ -64,48 +65,6 @@ const Editor = () => {
     const onTextEdit = (element) => {
         const id = element.getAttribute("nodeid");
         virtualDom.body.querySelector(`[nodeid="${id}"]`).innerHTML = element.innerHTML;
-    }
-
-    const parseStrToDOM = (str) => {
-        const parser = new DOMParser();
-        return parser.parseFromString(str, "text/html");
-    }
-
-    const wrapTextNodes = (dom) => {
-        const body = dom.body;
-        let textNodes = [];
-
-        function recursionNode(element) {
-            element.childNodes.forEach(node => {
-                if(node.nodeName === "#text" && node.nodeValue.replace(/\s+/g, "").length > 0) {
-                    textNodes.push(node);
-                } else {
-                    recursionNode(node);
-                }
-            });
-        }
-
-        recursionNode(body);
-
-        textNodes.forEach((node, i) => {
-            const wrapper = dom.createElement('text-editor');
-            node.parentNode.replaceChild(wrapper, node);
-            wrapper.appendChild(node);
-            wrapper.setAttribute("nodeid", i);
-        })
-
-        return dom;
-    }
-
-    const serializeDOMToString = (dom) => {
-        const serializer = new XMLSerializer();
-        return serializer.serializeToString(dom);
-    }
-
-    const unwrapTextNodes = (dom) => {
-        dom.body.querySelectorAll("text-editor").forEach(element => {
-            element.parentNode.replaceChild(element.firstChild, element);
-        });
     }
 
     const loadPageList = () => {
