@@ -72,6 +72,13 @@ const Editor = () => {
             element.addEventListener("input", () => {
                 onTextEdit(element);
             });
+            if(element.parentNode.nodeName === "A" || element.parentNode.nodeName === "BUTTON") {
+                element.addEventListener("contextmenu", (e) => {
+                    e.preventDefault();
+                    element.contentEditable = "true";
+                    element.focus();
+                })
+            }
         });
     }
 
