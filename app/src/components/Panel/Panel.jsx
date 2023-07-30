@@ -1,6 +1,7 @@
 import React from "react";
+import EditorMeta from "../EditorMeta/EditorMeta.jsx";
 
-const Panel = ({pageList, backupsList, save, init, restoreBackup}) => {
+const Panel = ({pageList, backupsList, save, init, restoreBackup, virtualDom}) => {
 
     return (
         <div className="panel">
@@ -18,6 +19,7 @@ const Panel = ({pageList, backupsList, save, init, restoreBackup}) => {
                     </li>
                 ))}
             </ul>
+            {virtualDom ? <EditorMeta virtualDom={virtualDom}/> : undefined}
             <button>Open</button>
             <button>Restore</button>
             <button onClick={save}>Deploy</button>

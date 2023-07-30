@@ -82,3 +82,29 @@ iframe {
         transform: rotate(360deg);
     }
 }
+
+.edittor-meta {
+    position: relative;
+    &__btn {
+        width: 120px;
+        height: 100%;
+    }
+    &__block {
+        top: 100%;
+        left: 0;
+        position: absolute;
+        z-index: 2;
+        width: 200px;
+        background-color:#fff;
+        border: 1px solid #000;
+        padding: 10px;
+        display: none;
+        flex-direction: column;
+        &.active {
+            display: flex;
+        }
+    }
+    input {
+        margin-bottom: 15px;
+    }
+}

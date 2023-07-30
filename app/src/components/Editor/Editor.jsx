@@ -160,7 +160,7 @@ const Editor = () => {
         <>
             <Spinner active={loading} />
             <iframe src="" frameBorder="0" ref={iframeRef}></iframe>
-            <Panel save={save} pageList={pageList} backupsList={backupsList} restoreBackup={restoreBackup} init={init} />
+            <Panel save={save} pageList={pageList} backupsList={backupsList} restoreBackup={restoreBackup} init={init} virtualDom={virtualDom} />
         </>
     )
 }
